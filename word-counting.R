@@ -6,8 +6,11 @@ library(stringr)
 
 df_labs<-read.xlsx("Data/Musk+FG+2+Day+2_March+10,+2026_16.46.xlsx")
 df_vals<-read.xlsx("Data/Musk+FG+2+Day+2_March+10,+2026_16.46 (1).xlsx")
-read.xlsx("Musk+FG+2+Day+2_March+10,+2026_16.46 (1).xlsx")
+#read.xlsx("Musk+FG+2+Day+2_March+10,+2026_16.46 (1).xlsx")
 
+#not great, but right now cleaning out any irrelevant columns by hand. 
+#there is probably a way to do this in order to not have to update this per survey
+#or per project, but that will take more workarounds
 remov_col<-c("StartDate",             "EndDate",               "Status",                "IPAddress",            
  "Progress",              "Duration.(in.seconds)", "Finished",              "RecordedDate",         
  "ResponseId",            "RecipientLastName",     "RecipientFirstName",    "RecipientEmail",       
@@ -113,12 +116,14 @@ df_vals <- df_vals %>%
 df_vals$total_words<-0
 df_vals$words_per_Q<-0
 
-library(dplyr)
-library(stringr)
 
-# exclude summary columns and Q2
-question_cols <- setdiff(names(df_vals), c("total_words", "words_per_Q", "Q2"))
 
+# exclude summary columns and Q2 from counted totals
+question_cols<-setdiff(names(df_vals), c("total_words", "words_per_Q", "Q2"))
+
+#thanks Claude for the code assist
+#Basically we're setting all of the question columns we want counted to characters
+#then, we're making sure the column is not NA, trimming entries by spaces and counting all words
 df_vals <- df_vals %>%
   mutate(across(all_of(question_cols), as.character)) %>%
   rowwise() %>%
@@ -134,9 +139,14 @@ df_vals <- df_vals %>%
 
 
 # set column names from first row
-colnames(df_vals) <- as.character(df_vals[1, ])
+#colnames(df_vals) <- as.character(df_vals[1, ])
+#above line works, but makes it impossible to output as CSV file because  of columns with same name
+df_vals$total_words[1]<-"total_words"
+df_vals$words_per_Q[1]<-"words_per_Q"
+df_vals$n_answered[1]<-"n_answered"
 
 # remove the first row
-df_vals <- df_vals[-1, ]
+#df_vals <- df_vals[-1, ]
+#just run above if not saving as CSV and cleaning for optics
 
 write.csv(df_vals, "Output/df_Qs_vals.csv")
