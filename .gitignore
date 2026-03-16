@@ -1,0 +1,7 @@
+.Rproj.user**
+.Rhistory
+*.Rproj
+.Rproj.user
+
+Data/
+Output/
